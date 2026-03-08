@@ -3,10 +3,10 @@ alunos = []
 
 def criar_aluno():
     nome = input("Digite o nome do aluno: ")
-    idade = input("Digite a idade do aluno: ")
+    idade = int(input("Digite a idade do aluno: "))
     curso = input("Digite o curso do aluno (GES, GEC, GET, GEP e etc): ")
     matricula = input("Digite a matrícula do aluno: ")
-    aluno = {"nome": nome, "idade": idade, "curso": curso, "matricula": matricula}
+    aluno = {"nome": nome, "idade": idade, "matricula": curso+matricula}
     alunos.append(aluno)
     print("Aluno criado com sucesso!")
 
@@ -15,7 +15,7 @@ def listar_alunos():
         print("Nenhum aluno disponível.")
     else:
         for index, aluno in enumerate(alunos):
-            print(f"{index + 1}. Nome: {aluno['nome']}, Idade: {aluno['idade']}, Curso: {aluno['curso']}, Matrícula: {aluno['matricula']}")
+            print(f"{index + 1}. Nome: {aluno['nome']}, Idade: {aluno['idade']}, Matrícula: {aluno['matricula']}")
 
 def atualizar_aluno():
     listar_alunos()
@@ -23,10 +23,10 @@ def atualizar_aluno():
         index = int(input("Digite o número do aluno que deseja atualizar: ")) - 1
         if 0 <= index < len(alunos):
             nome = input("Digite o novo nome do aluno: ")
-            idade = input("Digite a nova idade do aluno: ")
+            idade = int(input("Digite a nova idade do aluno: "))
             curso = input("Digite o novo curso do aluno (GES, GEC, GET, GEP e etc): ")
             matricula = input("Digite a nova matrícula do aluno: ")
-            alunos[index] = {"nome": nome, "idade": idade, "curso": curso, "matricula": matricula}
+            alunos[index] = {"nome": nome, "idade": idade, "matricula": curso+matricula}
             print("Aluno atualizado com sucesso!")
         else:
             print("Número de aluno inválido.")
