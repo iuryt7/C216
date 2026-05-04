@@ -1,149 +1,173 @@
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent)) ## foi para corrigir o erro de importação do app.main, não sei por que tava dando isso mas funcionou
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import pytest
 from fastapi.testclient import TestClient
- 
 from app.main import app
- 
+
 client = TestClient(app)
- 
- 
 
-class TestHelloWorld:
-    def test_hello_world_retorna_200(self):
-        response = client.get("/")
-        assert response.status_code == 200
- 
-    def test_hello_world_retorna_mensagem_correta(self):
-        response = client.get("/")
-        assert response.json() == {"message": "Hello, FastAPI!"}
- 
- 
-class TestHelloViaQuery:
-    def test_hello_via_query_com_nome(self):
-        response = client.get("/api/v1/hello", params={"name": "Iury"})
-        assert response.status_code == 200
-        assert response.json() == {"message": "Hello Iury"}
- 
-    def test_hello_via_query_com_nome_vazio(self):
-        response = client.get("/api/v1/hello", params={"name": ""})
-        assert response.status_code == 200
-        assert response.json() == {"message": "Hello "}
- 
-    def test_hello_via_query_sem_parametro_retorna_422(self):
-        response = client.get("/api/v1/hello")
-        assert response.status_code == 422
- 
-    def test_hello_via_query_com_caracteres_especiais(self):
-        response = client.get("/api/v1/hello", params={"name": "João da Silva"})
-        assert response.status_code == 200
-        assert response.json() == {"message": "Hello João da Silva"}
- 
- 
-class TestHelloViaPath:
-    def test_hello_via_path_com_nome(self):
-        response = client.get("/api/v1/hello/Iury")
-        assert response.status_code == 200
-        assert response.json() == {"message": "Hello Iury"}
- 
-    def test_hello_via_path_com_nome_numerico(self):
-        response = client.get("/api/v1/hello/123")
-        assert response.status_code == 200
-        assert response.json() == {"message": "Hello 123"}
- 
-    def test_hello_via_path_sem_nome(self):
-        response = client.get("/api/v1/hello/")
-        assert response.status_code == 422
- 
-class TestHelloPost:
-    def test_post_hello_com_body_valido(self):
-        response = client.post("/api/v1/hello", json={"name": "Iury"})
-        assert response.status_code == 200
-        assert response.json() == {"message": "Hello Iury"}
- 
-    def test_post_hello_sem_body_retorna_422(self):
-        response = client.post("/api/v1/hello")
-        assert response.status_code == 422
- 
-    def test_post_hello_com_body_invalido_retorna_422(self):
-        response = client.post("/api/v1/hello", json={"nome": "Iury"})
-        assert response.status_code == 422
- 
-    def test_post_hello_com_name_nao_string_retorna_422(self):
-        response = client.post("/api/v1/hello", json={"name": 123})
-        assert response.status_code in (200, 422)
- 
 
-class TestUpdate:
-    def test_put_update_com_body_valido(self):
-        response = client.put("/api/v1/update", json={"name": "Iury"})
-        assert response.status_code == 200
-        assert response.json() == {
-            "message": "Recurso atualizado com o nome: Iury"
-        }
- 
-    def test_put_update_sem_body_retorna_422(self):
-        response = client.put("/api/v1/update")
-        assert response.status_code == 422
- 
-    def test_put_update_body_sem_name_retorna_422(self):
-        response = client.put("/api/v1/update", json={})
-        assert response.status_code == 422
- 
- 
-class TestDelete:
-    def test_delete_com_nome_valido(self):
-        response = client.delete("/api/v1/delete", params={"name": "Iury"})
-        assert response.status_code == 200
-        assert response.json() == {
-            "message": "Recurso deletado com o nome: Iury"
-        }
- 
-    def test_delete_sem_nome_retorna_422(self):
-        response = client.delete("/api/v1/delete")
-        assert response.status_code == 422
- 
- 
-class TestPatch:
-    def test_patch_com_body_valido(self):
-        response = client.patch("/api/v1/patch", json={"name": "Iury"})
-        assert response.status_code == 200
-        assert response.json() == {
-            "message": "Modificação parcial aplicada ao recurso com o nome: Iury"
-        }
- 
-    def test_patch_sem_body_retorna_422(self):
-        response = client.patch("/api/v1/patch")
-        assert response.status_code == 422
- 
-    def test_patch_body_sem_name_retorna_422(self):
-        response = client.patch("/api/v1/patch", json={})
-        assert response.status_code == 422
- 
+@pytest.fixture(autouse=True)
+def reset_db():
+    client.delete("/api/v1/alunos/")
+    yield
+    client.delete("/api/v1/alunos/")
 
-@pytest.mark.parametrize(
-    "nome",
-    ["Iury", "Ana", "João", "Maria", "x", "A" * 100],
-)
-def test_fluxo_completo_com_varios_nomes(nome: str):
-    r = client.get("/api/v1/hello", params={"name": nome})
-    assert r.status_code == 200
-    assert r.json()["message"] == f"Hello {nome}"
 
-    if "/" not in nome:
-        r = client.get(f"/api/v1/hello/{nome}")
+class TestCriarAluno:
+    def test_criar_aluno_ges(self):
+        r = client.post("/api/v1/alunos/", json={"nome": "Ana", "email": "ana@email.com", "curso": "GES"})
+        assert r.status_code == 201
+        data = r.json()
+        assert data["id"] == "GES1"
+        assert data["matricula"] == 1
+        assert data["curso"] == "GES"
+
+    def test_criar_3_alunos_ges(self):
+        nomes = ["Ana", "Bruno", "Carla"]
+        for i, nome in enumerate(nomes, 1):
+            r = client.post("/api/v1/alunos/", json={"nome": nome, "email": f"{nome.lower()}@email.com", "curso": "GES"})
+            assert r.status_code == 201
+            assert r.json()["id"] == f"GES{i}"
+
+    def test_criar_3_alunos_gec(self):
+        nomes = ["Diego", "Eva", "Fabio"]
+        for i, nome in enumerate(nomes, 1):
+            r = client.post("/api/v1/alunos/", json={"nome": nome, "email": f"{nome.lower()}@email.com", "curso": "GEC"})
+            assert r.status_code == 201
+            assert r.json()["id"] == f"GEC{i}"
+
+    def test_curso_invalido_retorna_400(self):
+        r = client.post("/api/v1/alunos/", json={"nome": "Teste", "email": "teste@email.com", "curso": "XYZ"})
+        assert r.status_code == 400
+
+    def test_matriculas_independentes_por_curso(self):
+        client.post("/api/v1/alunos/", json={"nome": "Ana", "email": "ana@email.com", "curso": "GES"})
+        client.post("/api/v1/alunos/", json={"nome": "Bruno", "email": "bruno@email.com", "curso": "GES"})
+        r = client.post("/api/v1/alunos/", json={"nome": "Carla", "email": "carla@email.com", "curso": "GEC"})
+        assert r.json()["id"] == "GEC1"
+        assert r.json()["matricula"] == 1
+
+
+class TestListarAlunos:
+    def test_listar_alunos_vazio(self):
+        r = client.get("/api/v1/alunos/")
         assert r.status_code == 200
- 
-    r = client.post("/api/v1/hello", json={"name": nome})
-    assert r.status_code == 200
- 
-    r = client.put("/api/v1/update", json={"name": nome})
-    assert r.status_code == 200
- 
-    r = client.delete("/api/v1/delete", params={"name": nome})
-    assert r.status_code == 200
- 
-    r = client.patch("/api/v1/patch", json={"name": nome})
-    assert r.status_code == 200
+        assert r.json() == []
+
+    def test_listar_alunos_com_dados(self):
+        client.post("/api/v1/alunos/", json={"nome": "Ana", "email": "ana@email.com", "curso": "GES"})
+        client.post("/api/v1/alunos/", json={"nome": "Bruno", "email": "bruno@email.com", "curso": "GEC"})
+        r = client.get("/api/v1/alunos/")
+        assert r.status_code == 200
+        assert len(r.json()) == 2
+
+    def test_listar_retorna_todos_os_campos(self):
+        client.post("/api/v1/alunos/", json={"nome": "Ana", "email": "ana@email.com", "curso": "GES"})
+        aluno = client.get("/api/v1/alunos/").json()[0]
+        assert all(k in aluno for k in ["id", "nome", "email", "curso", "matricula"])
+
+
+class TestBuscarAluno:
+    def test_buscar_aluno_existente(self):
+        client.post("/api/v1/alunos/", json={"nome": "Ana", "email": "ana@email.com", "curso": "GES"})
+        r = client.get("/api/v1/alunos/GES1")
+        assert r.status_code == 200
+        assert r.json()["nome"] == "Ana"
+
+    def test_buscar_aluno_inexistente_retorna_404(self):
+        r = client.get("/api/v1/alunos/GES999")
+        assert r.status_code == 404
+
+    def test_buscar_aluno_gec_por_id(self):
+        client.post("/api/v1/alunos/", json={"nome": "Diego", "email": "diego@email.com", "curso": "GEC"})
+        r = client.get("/api/v1/alunos/GEC1")
+        assert r.status_code == 200
+        assert r.json()["curso"] == "GEC"
+
+
+class TestAtualizarAluno:
+    def test_atualizar_nome(self):
+        client.post("/api/v1/alunos/", json={"nome": "Ana", "email": "ana@email.com", "curso": "GES"})
+        r = client.patch("/api/v1/alunos/GES1", json={"nome": "Ana Clara"})
+        assert r.status_code == 200
+        assert r.json()["nome"] == "Ana Clara"
+
+    def test_atualizar_email(self):
+        client.post("/api/v1/alunos/", json={"nome": "Ana", "email": "ana@email.com", "curso": "GES"})
+        r = client.patch("/api/v1/alunos/GES1", json={"email": "novo@email.com"})
+        assert r.status_code == 200
+        assert r.json()["email"] == "novo@email.com"
+
+    def test_atualizar_aluno_inexistente_retorna_404(self):
+        r = client.patch("/api/v1/alunos/GES999", json={"nome": "Teste"})
+        assert r.status_code == 404
+
+    def test_atualizar_curso_invalido_retorna_400(self):
+        client.post("/api/v1/alunos/", json={"nome": "Ana", "email": "ana@email.com", "curso": "GES"})
+        r = client.patch("/api/v1/alunos/GES1", json={"curso": "XYZ"})
+        assert r.status_code == 400
+
+
+class TestRemoverAluno:
+    def test_remover_aluno(self):
+        client.post("/api/v1/alunos/", json={"nome": "Ana", "email": "ana@email.com", "curso": "GES"})
+        r = client.delete("/api/v1/alunos/GES1")
+        assert r.status_code == 200
+        assert client.get("/api/v1/alunos/GES1").status_code == 404
+
+    def test_id_nao_reutilizado_apos_delete(self):
+        client.post("/api/v1/alunos/", json={"nome": "Ana", "email": "ana@email.com", "curso": "GES"})
+        client.delete("/api/v1/alunos/GES1")
+        r = client.post("/api/v1/alunos/", json={"nome": "Bruno", "email": "bruno@email.com", "curso": "GES"})
+        assert r.json()["id"] == "GES2"
+
+    def test_remover_aluno_inexistente_retorna_404(self):
+        r = client.delete("/api/v1/alunos/GES999")
+        assert r.status_code == 404
+
+    def test_remover_nao_afeta_outros_alunos(self):
+        client.post("/api/v1/alunos/", json={"nome": "Ana", "email": "ana@email.com", "curso": "GES"})
+        client.post("/api/v1/alunos/", json={"nome": "Bruno", "email": "bruno@email.com", "curso": "GES"})
+        client.delete("/api/v1/alunos/GES1")
+        assert client.get("/api/v1/alunos/GES2").status_code == 200
+
+
+class TestResetarAlunos:
+    def test_resetar_lista(self):
+        client.post("/api/v1/alunos/", json={"nome": "Ana", "email": "ana@email.com", "curso": "GES"})
+        r = client.delete("/api/v1/alunos/")
+        assert r.status_code == 200
+        assert client.get("/api/v1/alunos/").json() == []
+
+    def test_resetar_reinicia_contadores(self):
+        client.post("/api/v1/alunos/", json={"nome": "Ana", "email": "ana@email.com", "curso": "GES"})
+        client.delete("/api/v1/alunos/")
+        r = client.post("/api/v1/alunos/", json={"nome": "Bruno", "email": "bruno@email.com", "curso": "GES"})
+        assert r.json()["id"] == "GES1"
+
+
+class TestFluxoCompleto:
+    def test_fluxo_3_alunos_ges_e_3_gec(self):
+        ges = [{"nome": "Ana", "email": "ana@email.com", "curso": "GES"},
+               {"nome": "Bruno", "email": "bruno@email.com", "curso": "GES"},
+               {"nome": "Carla", "email": "carla@email.com", "curso": "GES"}]
+        gec = [{"nome": "Diego", "email": "diego@email.com", "curso": "GEC"},
+               {"nome": "Eva", "email": "eva@email.com", "curso": "GEC"},
+               {"nome": "Fabio", "email": "fabio@email.com", "curso": "GEC"}]
+
+        for aluno in ges + gec:
+            assert client.post("/api/v1/alunos/", json=aluno).status_code == 201
+
+        assert len(client.get("/api/v1/alunos/").json()) == 6
+
+        assert client.get("/api/v1/alunos/GES3").json()["nome"] == "Carla"
+        assert client.get("/api/v1/alunos/GEC3").json()["nome"] == "Fabio"
+
+        client.patch("/api/v1/alunos/GES1", json={"nome": "Ana Paula"})
+        assert client.get("/api/v1/alunos/GES1").json()["nome"] == "Ana Paula"
+
+        client.delete("/api/v1/alunos/GEC2")
+        assert len(client.get("/api/v1/alunos/").json()) == 5
