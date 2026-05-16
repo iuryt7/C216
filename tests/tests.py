@@ -1,11 +1,17 @@
+import os
+os.environ.setdefault("DATABASE_URL", "sqlite:///./test_faculdade.db")
+
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "app"))
 
 import pytest
 from fastapi.testclient import TestClient
-from app.main import app
 
+from database import Base, engine, criar_tabelas
+from services.main import app
+
+criar_tabelas()
 client = TestClient(app)
 
 
@@ -38,6 +44,20 @@ class TestCriarAluno:
             r = client.post("/api/v1/alunos/", json={"nome": nome, "email": f"{nome.lower()}@email.com", "curso": "GEC"})
             assert r.status_code == 201
             assert r.json()["id"] == f"GEC{i}"
+
+    def test_criar_3_alunos_get(self):
+        nomes = ["Gabi", "Heitor", "Isis"]
+        for i, nome in enumerate(nomes, 1):
+            r = client.post("/api/v1/alunos/", json={"nome": nome, "email": f"{nome.lower()}@email.com", "curso": "GET"})
+            assert r.status_code == 201
+            assert r.json()["id"] == f"GET{i}"
+
+    def test_criar_3_alunos_gep(self):
+        nomes = ["Jonas", "Karen", "Leo"]
+        for i, nome in enumerate(nomes, 1):
+            r = client.post("/api/v1/alunos/", json={"nome": nome, "email": f"{nome.lower()}@email.com", "curso": "GEP"})
+            assert r.status_code == 201
+            assert r.json()["id"] == f"GEP{i}"
 
     def test_curso_invalido_retorna_400(self):
         r = client.post("/api/v1/alunos/", json={"nome": "Teste", "email": "teste@email.com", "curso": "XYZ"})
@@ -149,25 +169,53 @@ class TestResetarAlunos:
         assert r.json()["id"] == "GES1"
 
 
+class TestPersistencia:
+    def test_dados_persistem_entre_requisicoes(self):
+        client.post("/api/v1/alunos/", json={"nome": "Ana", "email": "ana@email.com", "curso": "GES"})
+        r1 = client.get("/api/v1/alunos/GES1")
+        r2 = client.get("/api/v1/alunos/GES1")
+        assert r1.json() == r2.json()
+
+    def test_atualizacao_persiste(self):
+        client.post("/api/v1/alunos/", json={"nome": "Ana", "email": "ana@email.com", "curso": "GES"})
+        client.patch("/api/v1/alunos/GES1", json={"nome": "Ana Paula"})
+        r = client.get("/api/v1/alunos/GES1")
+        assert r.json()["nome"] == "Ana Paula"
+
+    def test_remocao_persiste(self):
+        client.post("/api/v1/alunos/", json={"nome": "Ana", "email": "ana@email.com", "curso": "GES"})
+        client.delete("/api/v1/alunos/GES1")
+        assert client.get("/api/v1/alunos/GES1").status_code == 404
+
+
 class TestFluxoCompleto:
-    def test_fluxo_3_alunos_ges_e_3_gec(self):
-        ges = [{"nome": "Ana", "email": "ana@email.com", "curso": "GES"},
-               {"nome": "Bruno", "email": "bruno@email.com", "curso": "GES"},
-               {"nome": "Carla", "email": "carla@email.com", "curso": "GES"}]
-        gec = [{"nome": "Diego", "email": "diego@email.com", "curso": "GEC"},
-               {"nome": "Eva", "email": "eva@email.com", "curso": "GEC"},
-               {"nome": "Fabio", "email": "fabio@email.com", "curso": "GEC"}]
+    def test_fluxo_3_alunos_por_curso(self):
+        cursos = {
+            "GES": ["Ana", "Bruno", "Carla"],
+            "GEC": ["Diego", "Eva", "Fabio"],
+            "GET": ["Gabi", "Heitor", "Isis"],
+            "GEP": ["Jonas", "Karen", "Leo"],
+        }
 
-        for aluno in ges + gec:
-            assert client.post("/api/v1/alunos/", json=aluno).status_code == 201
+        for curso, nomes in cursos.items():
+            for i, nome in enumerate(nomes, 1):
+                r = client.post("/api/v1/alunos/", json={
+                    "nome": nome,
+                    "email": f"{nome.lower()}@email.com",
+                    "curso": curso,
+                })
+                assert r.status_code == 201
+                assert r.json()["id"] == f"{curso}{i}"
 
-        assert len(client.get("/api/v1/alunos/").json()) == 6
+        assert len(client.get("/api/v1/alunos/").json()) == 12
 
         assert client.get("/api/v1/alunos/GES3").json()["nome"] == "Carla"
         assert client.get("/api/v1/alunos/GEC3").json()["nome"] == "Fabio"
+        assert client.get("/api/v1/alunos/GET3").json()["nome"] == "Isis"
+        assert client.get("/api/v1/alunos/GEP3").json()["nome"] == "Leo"
 
         client.patch("/api/v1/alunos/GES1", json={"nome": "Ana Paula"})
         assert client.get("/api/v1/alunos/GES1").json()["nome"] == "Ana Paula"
 
         client.delete("/api/v1/alunos/GEC2")
-        assert len(client.get("/api/v1/alunos/").json()) == 5
+        assert len(client.get("/api/v1/alunos/").json()) == 11
