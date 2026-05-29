@@ -6,20 +6,32 @@ API REST para gerenciamento de alunos, desenvolvida com FastAPI e PostgreSQL.
 
 ```
 C216/
-├── app/
+├── backend/
 │   ├── middleware/        # logging e custom headers
 │   ├── routes/            # endpoints da API
 │   ├── schemas/           # modelos Pydantic
 │   ├── services/          # entry point (main.py)
-│   └── database.py        # configuração SQLAlchemy
+│   ├── database.py        # configuração SQLAlchemy
+│   ├── Dockerfile
+│   └── requirements.txt
+├── frontend/
+│   ├── templates/
+│   │   ├── index.html     # listagem de alunos
+│   │   ├── about.html     # informações do desenvolvedor
+│   │   ├── contact.html   # informações de contato
+│   │   ├── novo_aluno.html
+│   │   └── editar_aluno.html
+│   ├── static/
+│   │   └── styles.css
+│   ├── app.py             # aplicação Flask
+│   ├── Dockerfile
+│   └── requirements.txt
 ├── db/
 │   └── init.sql           # criação das tabelas
 ├── tests/
 │   └── tests.py           # testes automatizados
 ├── .env                   # credenciais (não commitado)
-├── docker-compose.yml
-├── dockerfile
-└── requirements.txt
+└── docker-compose.yml
 ```
 
 ## Pré-requisitos
@@ -64,9 +76,11 @@ docker-compose down
 docker-compose down -v
 ```
 
-A API estará disponível em `http://localhost:8000`
-
-Documentação interativa (Swagger): `http://localhost:8000/docs`
+| Serviço | Endereço |
+|---|---|
+| Frontend (Flask) | `http://localhost:5000` |
+| API (FastAPI) | `http://localhost:8000` |
+| Swagger (docs) | `http://localhost:8000/docs` |
 
 ## Endpoints
 
@@ -88,7 +102,7 @@ Os testes usam SQLite localmente — não é necessário ter o Docker rodando.
 **1. Instale as dependências** (apenas na primeira vez):
 
 ```bash
-pip install -r requirements.txt
+pip install -r backend/requirements.txt
 ```
 
 **2. Rode todos os testes:**
