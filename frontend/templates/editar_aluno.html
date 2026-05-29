@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Aluno - Gerenciador de Alunos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Gerenciador de Alunos</h1>
+        <nav>
+            <a href="{{ url_for('index') }}">Início</a>
+            <a href="{{ url_for('about') }}">Sobre</a>
+            <a href="{{ url_for('contact') }}">Contato</a>
+            <a href="{{ url_for('novo_aluno') }}" class="btn-primary">+ Novo Aluno</a>
+        </nav>
+    </header>
+
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+
+        <section class="card form-card">
+            <h2>Editar Aluno <span class="badge">{{ aluno.id }}</span></h2>
+            <form method="POST">
+                <div class="form-group">
+                    <label for="nome">Nome</label>
+                    <input type="text" id="nome" name="nome" value="{{ aluno.nome }}" placeholder="Nome completo">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" value="{{ aluno.email }}" placeholder="email@exemplo.com">
+                </div>
+                <div class="form-group">
+                    <label for="curso">Curso</label>
+                    <select id="curso" name="curso">
+                        <option value="" disabled>Selecione um curso</option>
+                        {% for curso in cursos %}
+                        <option value="{{ curso }}" {% if curso == aluno.curso %}selected{% endif %}>{{ curso }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <a href="{{ url_for('index') }}" class="btn-cancel">Cancelar</a>
+                    <button type="submit" class="btn-primary">Salvar</button>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <footer>
+        <p>C216 - Tópicos em Engenharia de Software &mdash; Iury Teixeira de Souza &mdash; Matrícula: 317</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Alunos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Gerenciador de Alunos</h1>
+        <nav>
+            <a href="{{ url_for('index') }}">Início</a>
+            <a href="{{ url_for('about') }}">Sobre</a>
+            <a href="{{ url_for('contact') }}">Contato</a>
+            <a href="{{ url_for('novo_aluno') }}" class="btn-primary">+ Novo Aluno</a>
+        </nav>
+    </header>
+
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+
+        <section class="card">
+            <h2>Lista de Alunos</h2>
+            {% if alunos %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Curso</th>
+                        <th>Matrícula</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for aluno in alunos %}
+                    <tr>
+                        <td><span class="badge">{{ aluno.id }}</span></td>
+                        <td>{{ aluno.nome }}</td>
+                        <td>{{ aluno.email }}</td>
+                        <td>{{ aluno.curso }}</td>
+                        <td>{{ aluno.matricula }}</td>
+                        <td class="actions">
+                            <a href="{{ url_for('editar_aluno', aluno_id=aluno.id) }}" class="btn-edit">Editar</a>
+                            <form method="POST" action="{{ url_for('deletar_aluno', aluno_id=aluno.id) }}"
+                                  onsubmit="return confirm('Deseja remover {{ aluno.nome }}?')">
+                                <button type="submit" class="btn-delete">Remover</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <p class="total">Total: {{ alunos | length }} aluno(s)</p>
+            {% else %}
+            <p class="empty">Nenhum aluno cadastrado. <a href="{{ url_for('novo_aluno') }}">Cadastrar agora</a>.</p>
+            {% endif %}
+        </section>
+    </main>
+
+    <footer>
+        <p>C216 - Tópicos em Engenharia de Software &mdash; Iury Teixeira de Souza &mdash; Matrícula: 317</p>
+    </footer>
+</body>
+</html>

@@ -3,7 +3,7 @@ os.environ.setdefault("DATABASE_URL", "sqlite:///./test_faculdade.db")
 
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "app"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "backend"))
 
 import pytest
 from fastapi.testclient import TestClient

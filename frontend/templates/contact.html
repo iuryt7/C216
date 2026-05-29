@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contato - Gerenciador de Alunos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Gerenciador de Alunos</h1>
+        <nav>
+            <a href="{{ url_for('index') }}">Início</a>
+            <a href="{{ url_for('about') }}">Sobre</a>
+            <a href="{{ url_for('contact') }}">Contato</a>
+            <a href="{{ url_for('novo_aluno') }}" class="btn-primary">+ Novo Aluno</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="card">
+            <h2>Contato</h2>
+            <div class="about-content">
+                <div class="about-section">
+                    <h3>Informações de Contato</h3>
+                    <table class="info-table">
+                        <tr>
+                            <td><strong>Nome</strong></td>
+                            <td>Iury Teixeira de Souza</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Email</strong></td>
+                            <td>iury.souza@aluno.inatel.br</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Telefone</strong></td>
+                            <td>(35) 99999-0317</td>
+                        </tr>
+                        <tr>
+                            <td><strong>GitHub</strong></td>
+                            <td>github.com/iury-teixeira</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="about-section">
+                    <h3>Localização</h3>
+                    <table class="info-table">
+                        <tr>
+                            <td><strong>Instituição</strong></td>
+                            <td>Instituto Nacional de Telecomunicações - Inatel</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Endereço</strong></td>
+                            <td>Av. João de Camargo, 510 - Santa Rita do Sapucaí, MG</td>
+                        </tr>
+                        <tr>
+                            <td><strong>CEP</strong></td>
+                            <td>37540-000</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Horário</strong></td>
+                            <td>Segunda a Sexta, 08h às 18h</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>C216 - Tópicos em Engenharia de Software &mdash; Iury Teixeira de Souza &mdash; Matrícula: 317</p>
+    </footer>
+</body>
+</html>

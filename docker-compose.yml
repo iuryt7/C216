@@ -19,7 +19,7 @@ services:
       retries: 10
 
   api:
-    build: .
+    build: ./backend
     ports:
       - "8000:8000"
     environment:
@@ -27,6 +27,15 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5000:5000"
+    environment:
+      API_URL: http://api:8000
+    depends_on:
+      - api
 
 volumes:
   pgdata:

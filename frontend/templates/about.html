@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sobre - Gerenciador de Alunos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Gerenciador de Alunos</h1>
+        <nav>
+            <a href="{{ url_for('index') }}">Início</a>
+            <a href="{{ url_for('about') }}">Sobre</a>
+            <a href="{{ url_for('contact') }}">Contato</a>
+            <a href="{{ url_for('novo_aluno') }}" class="btn-primary">+ Novo Aluno</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="card">
+            <h2>Sobre o Projeto</h2>
+            <div class="about-content">
+                <div class="about-section">
+                    <h3>Desenvolvedor</h3>
+                    <table class="info-table">
+                        <tr>
+                            <td><strong>Nome</strong></td>
+                            <td>Iury Teixeira de Souza</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Matrícula</strong></td>
+                            <td><span class="badge">317</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Disciplina</strong></td>
+                            <td>C216 - Tópicos em Engenharia de Software</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Instituto</strong></td>
+                            <td>Instituto Nacional de Telecomunicações - Inatel</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="about-section">
+                    <h3>Sobre o Sistema</h3>
+                    <p>Sistema de gerenciamento de alunos desenvolvido com arquitetura de microsserviços, separando frontend e backend em containers Docker independentes.</p>
+                    <ul class="tech-list">
+                        <li><span class="badge">Backend</span> FastAPI + PostgreSQL</li>
+                        <li><span class="badge">Frontend</span> Flask + Jinja2</li>
+                        <li><span class="badge">Infra</span> Docker Compose</li>
+                        <li><span class="badge">Testes</span> Pytest + HTTPX</li>
+                    </ul>
+                </div>
+
+                <div class="about-section">
+                    <h3>Funcionalidades</h3>
+                    <ul class="feature-list">
+                        <li>Cadastro de alunos com geração automática de ID por curso</li>
+                        <li>Listagem, busca, edição e remoção de alunos</li>
+                        <li>Suporte aos cursos: GES, GEC, GET e GEP</li>
+                        <li>Middleware de logging e headers customizados</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>C216 - Tópicos em Engenharia de Software &mdash; Iury Teixeira de Souza &mdash; Matrícula: 317</p>
+    </footer>
+</body>
+</html>
